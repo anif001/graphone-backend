@@ -202,6 +202,9 @@
       <a href="#phase3">Phase 3: Seed Database</a>
       <a href="#phase4">Phase 4: Companies Module</a>
       <a href="#phase5">Phase 5: Investors Module</a>
+      <a href="#phase6">Phase 6: Products Module</a>
+      <a href="#phase7">Phase 7: Founders Module</a>
+      <a href="#phase8">Phase 8: News Module</a>
     </nav>
   </aside>
 
@@ -222,9 +225,9 @@
       <div class="progress-dot completed" title="Phase 3: Complete">3</div>
       <div class="progress-dot completed" title="Phase 4: Complete">4</div>
       <div class="progress-dot completed" title="Phase 5: Complete">5</div>
-      <div class="progress-dot pending" title="Phase 6">6</div>
-      <div class="progress-dot pending" title="Phase 7">7</div>
-      <div class="progress-dot pending" title="Phase 8">8</div>
+      <div class="progress-dot completed" title="Phase 6: Complete">6</div>
+      <div class="progress-dot completed" title="Phase 7: Complete">7</div>
+      <div class="progress-dot completed" title="Phase 8: Complete">8</div>
       <div class="progress-dot pending" title="Phase 9">9</div>
       <div class="progress-dot pending" title="Phase 10">10</div>
       <div class="progress-dot pending" title="Phase 11">11</div>
@@ -1047,8 +1050,35 @@ Promise.all([
 
     <h3>Mini Revision</h3>
     <div class="card">
-      <p><strong>Phase 5</strong> built the Investors module with the same routes → controllers → services pattern as companies. Supports type-based filtering and returns portfolio companies + led funding rounds on the detail endpoint. Ready for Phase 6 (Products Module).</p>
+      <p><strong>Phase 5</strong> built the Investors module with the same routes → controllers → services pattern as companies. Supports type-based filtering and returns portfolio companies + led funding rounds on the detail endpoint.</p>
     </div>
+
+    <!-- ======================== PHASE 6 ======================== -->
+    <h2 id="phase6">Phase 6: Products Module</h2>
+    <p><code>GET /api/v1/products</code> (paginated, searchable, filter by category) and <code>GET /api/v1/products/:slug</code> (profile with company details). Follows the same routes/controllers/services pattern.</p>
+    <table>
+      <tr><th>Endpoint</th><th>Params</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/products</td><td>page, limit, search, category, sortBy, sortOrder</td><td>List products</td></tr>
+      <tr><td>GET /api/v1/products/:slug</td><td>—</td><td>Product with company</td></tr>
+    </table>
+
+    <!-- ======================== PHASE 7 ======================== -->
+    <h2 id="phase7">Phase 7: Founders Module</h2>
+    <p><code>GET /api/v1/founders</code> (paginated, searchable) and <code>GET /api/v1/founders/:slug</code> (profile with companies founded).</p>
+    <table>
+      <tr><th>Endpoint</th><th>Params</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/founders</td><td>page, limit, search, sortBy, sortOrder</td><td>List founders</td></tr>
+      <tr><td>GET /api/v1/founders/:slug</td><td>—</td><td>Founder with companies</td></tr>
+    </table>
+
+    <!-- ======================== PHASE 8 ======================== -->
+    <h2 id="phase8">Phase 8: News Module</h2>
+    <p><code>GET /api/v1/news</code> (paginated, searchable, filter by source) and <code>GET /api/v1/news/:slug</code> (article with related companies).</p>
+    <table>
+      <tr><th>Endpoint</th><th>Params</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/news</td><td>page, limit, search, source, sortBy, sortOrder</td><td>List news articles</td></tr>
+      <tr><td>GET /api/v1/news/:slug</td><td>—</td><td>Article with companies</td></tr>
+    </table>
 
   </main>
 
