@@ -1,307 +1,317 @@
 # GraphOne API
 
-AI Ecosystem Directory API — explore companies, investors, founders, products, funding rounds, and news in the artificial intelligence landscape.
+GraphOne API is a REST API for exploring the AI ecosystem. It provides information about AI companies, investors, founders, products, funding rounds, and news through a modular backend built with Node.js, Express, and Supabase.
 
-## Tech Stack
+## Table of Contents
 
-- **Runtime:** Node.js 20+
-- **Framework:** Express 5
-- **Database:** PostgreSQL (via Supabase)
-- **Caching:** node-cache (in-memory)
-- **Auth:** Bearer token
-
-## Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Copy and fill environment variables
-cp .env.example .env
-
-# Run migrations
-npm run migrate
-
-# Seed database
-npm run seed
-
-# Start development server
-npm run dev
-```
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `PORT` | Server port (default: 3000) |
-| `NODE_ENV` | `development`, `production`, or `test` |
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Supabase anonymous key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (for seeding) |
-| `SUPABASE_DIRECT_URL` | Direct PostgreSQL connection string (for migrations) |
-| `API_AUTH_TOKEN` | Bearer token for authenticated endpoints |
-
-## Base URL
-
-**`https://graphone-backend.onrender.com`**
-
-All endpoints are prefixed with `/api/v1`.
+* Overview
+* Features
+* Technology Stack
+* Installation
+* Environment Variables
+* Project Structure
+* API Endpoints
+* Authentication
+* Swagger Documentation
+* Available Scripts
+* Deployment
+* License
 
 ---
 
-### Root
+## Overview
 
-**`GET https://graphone-backend.onrender.com/api/v1/`**
+The API provides endpoints for:
 
-Returns API info.
+* Companies
+* Investors
+* Founders
+* Products
+* Funding Rounds
+* News Articles
+* Search
+* Trending Companies
+* Ecosystem Statistics
 
-<details>
-<summary>Sample Response</summary>
+Base URL
 
-```json
-{
-  "statusCode": 200,
-  "success": true,
-  "data": {
-    "name": "GraphOne API",
-    "version": "1.0.0",
-    "description": "AI Ecosystem Platform Backend",
-    "status": "running",
-    "timestamp": "2026-06-28T11:04:38.011Z"
-  }
-}
+```text
+https://graphone-backend.onrender.com/api/v1
 ```
 
-</details>
+---
+
+## Features
+
+* RESTful API architecture
+* PostgreSQL database using Supabase
+* Swagger documentation
+* Pagination and filtering
+* Search across multiple entities
+* Trending companies endpoint
+* Ecosystem statistics
+* Health monitoring
+* Rate limiting
+* Response caching
+* Authentication for protected routes
+
+---
+
+## Technology Stack
+
+| Technology | Purpose           |
+| ---------- | ----------------- |
+| Node.js    | Runtime           |
+| Express.js | Web Framework     |
+| PostgreSQL | Database          |
+| Supabase   | Database Hosting  |
+| Swagger    | API Documentation |
+| Node Cache | Response Caching  |
+| Render     | Deployment        |
+
+---
+
+## Installation
+
+Clone the repository.
+
+```bash
+git clone https://github.com/anif001/graphone-backend.git
+
+cd graphone-backend/backend
+```
+
+Install dependencies.
+
+```bash
+npm install
+```
+
+Create a `.env` file.
+
+```env
+PORT=3000
+
+NODE_ENV=development
+
+SUPABASE_URL=
+
+SUPABASE_ANON_KEY=
+
+SUPABASE_SERVICE_ROLE_KEY=
+
+SUPABASE_DIRECT_URL=
+
+API_AUTH_TOKEN=
+```
+
+Run migrations.
+
+```bash
+npm run migrate
+```
+
+Seed the database.
+
+```bash
+npm run seed
+```
+
+Start the server.
+
+```bash
+npm run dev
+```
+
+---
+
+## Project Structure
+
+```text
+backend/
+│
+├── server.js
+├── package.json
+├── render.yaml
+│
+└── src
+    ├── config
+    ├── constants
+    ├── controllers
+    ├── middleware
+    ├── routes
+    ├── services
+    ├── validators
+    ├── utils
+    ├── seed
+    └── config/migrations
+```
+
+---
+
+## API Endpoints
+
+### Root
+
+| Method | Endpoint |
+| ------ | -------- |
+| GET    | `/`      |
+
+Returns API metadata.
 
 ---
 
 ### Companies
 
-**`GET https://graphone-backend.onrender.com/api/v1/companies`**
+| Method | Endpoint           |
+| ------ | ------------------ |
+| GET    | `/companies`       |
+| GET    | `/companies/:slug` |
 
-List companies. Query params: `page`, `limit`, `search`, `sort` (name|founded_year|created_at), `order` (asc|desc).
+Query Parameters
 
-<details>
-<summary>Sample Response</summary>
-
-```json
-{
-  "companies": [
-    { "name": "Adept AI", "slug": "adept-ai" },
-    { "name": "Anthropic", "slug": "anthropic" }
-  ],
-  "total": 58,
-  "page": 1,
-  "limit": 2
-}
-```
-
-</details>
-
-**`GET https://graphone-backend.onrender.com/api/v1/companies/:slug`**
-
-Company profile with founders, products, funding rounds, investors, news, and related companies.
+| Parameter | Description                    |
+| --------- | ------------------------------ |
+| page      | Page number                    |
+| limit     | Results per page               |
+| search    | Company name                   |
+| sort      | name, founded_year, created_at |
+| order     | asc, desc                      |
 
 ---
 
 ### Investors
 
-**`GET https://graphone-backend.onrender.com/api/v1/investors`**
+| Method | Endpoint           |
+| ------ | ------------------ |
+| GET    | `/investors`       |
+| GET    | `/investors/:slug` |
 
-List investors. Query params: `page`, `limit`, `type` (VC|Angel|Corporate|Accelerator|Other).
+Query Parameters
 
-<details>
-<summary>Sample Response</summary>
-
-```json
-{
-  "investors": [
-    { "name": "Accel", "slug": "accel", "type": "VC" },
-    { "name": "Air Street Capital", "slug": "air-street-capital", "type": "VC" }
-  ],
-  "total": 23,
-  "page": 1,
-  "limit": 2
-}
-```
-
-</details>
-
-**`GET https://graphone-backend.onrender.com/api/v1/investors/:slug`**
-
-Investor profile with portfolio companies and led funding rounds.
+| Parameter | Description                              |
+| --------- | ---------------------------------------- |
+| page      | Page number                              |
+| limit     | Results per page                         |
+| type      | VC, Angel, Corporate, Accelerator, Other |
 
 ---
 
 ### Products
 
-**`GET https://graphone-backend.onrender.com/api/v1/products`**
-
-List products. Query params: `page`, `limit`, `category`.
-
-**`GET https://graphone-backend.onrender.com/api/v1/products/:slug`**
-
-Product details with parent company.
+| Method | Endpoint          |
+| ------ | ----------------- |
+| GET    | `/products`       |
+| GET    | `/products/:slug` |
 
 ---
 
 ### Founders
 
-**`GET https://graphone-backend.onrender.com/api/v1/founders`**
-
-List founders. Query params: `page`, `limit`, `search`.
-
-**`GET https://graphone-backend.onrender.com/api/v1/founders/:slug`**
-
-Founder profile with associated companies.
+| Method | Endpoint          |
+| ------ | ----------------- |
+| GET    | `/founders`       |
+| GET    | `/founders/:slug` |
 
 ---
 
 ### News
 
-**`GET https://graphone-backend.onrender.com/api/v1/news`**
-
-List news articles. Query params: `page`, `limit`, `source`.
-
-**`GET https://graphone-backend.onrender.com/api/v1/news/:slug`**
-
-Article details with related companies.
+| Method | Endpoint      |
+| ------ | ------------- |
+| GET    | `/news`       |
+| GET    | `/news/:slug` |
 
 ---
 
-### Search & Discovery
+### Search
 
-**`GET https://graphone-backend.onrender.com/api/v1/search?q=openai`**
+| Method | Endpoint     |
+| ------ | ------------ |
+| GET    | `/search?q=` |
 
-Unified search across companies, investors, founders, products, and news. Query: `q` (required, min 2 chars), `limit`.
-
-<details>
-<summary>Sample Response</summary>
-
-```json
-{
-  "query": "openai",
-  "companies": [{ "name": "OpenAI", "slug": "openai", "founded_year": 2015 }],
-  "investors": [{ "name": "Andreessen Horowitz", "slug": "andreessen-horowitz", "type": "VC" }],
-  "founders": [],
-  "products": [],
-  "news": []
-}
-```
-
-</details>
-
-**`GET https://graphone-backend.onrender.com/api/v1/feed`**
-
-Chronological activity feed (news, funding rounds, product launches). Query: `page`, `limit`.
-
-<details>
-<summary>Sample Response</summary>
-
-```json
-{
-  "items": [
-    { "type": "news", "title": "Databricks Hits $43 Billion Valuation After $500M Raise" }
-  ],
-  "total": 205,
-  "page": 1,
-  "limit": 1
-}
-```
-
-</details>
-
-**`GET https://graphone-backend.onrender.com/api/v1/trending`**
-
-Trending companies ranked by recent activity. Query: `limit`, `days`.
-
-<details>
-<summary>Sample Response</summary>
-
-```json
-{
-  "companies": [
-    { "name": "OpenAI", "trendingScore": 0 },
-    { "name": "Anthropic", "trendingScore": 0 }
-  ]
-}
-```
-
-</details>
-
-**`GET https://graphone-backend.onrender.com/api/v1/stats`**
-
-Ecosystem statistics.
-
-<details>
-<summary>Sample Response</summary>
-
-```json
-{
-  "totalCompanies": 58,
-  "totalInvestors": 23,
-  "totalFounders": 29,
-  "totalProducts": 70,
-  "totalFundingRounds": 112,
-  "totalNewsArticles": 43,
-  "totalFundingUSD": 32235100000,
-  "investorTypeBreakdown": { "VC": 20, "Accelerator": 1, "Angel": 1, "Corporate": 1 },
-  "productCategoryBreakdown": { "Chatbot": 4, "LLM": 7, "Image Generation": 3, ... }
-}
-```
-
-</details>
+Searches across companies, investors, founders, products, and news.
 
 ---
 
-### System
+### Feed
 
-**`GET https://graphone-backend.onrender.com/api/v1/health`**
+| Method | Endpoint |
+| ------ | -------- |
+| GET    | `/feed`  |
 
-Health check with server uptime.
+Returns the latest ecosystem activity.
 
-<details>
-<summary>Sample Response</summary>
+---
 
-```json
-{
-  "statusCode": 200,
-  "success": true,
-  "data": { "uptime": 110.18, "timestamp": 1782644684834 }
-}
+### Trending
+
+| Method | Endpoint    |
+| ------ | ----------- |
+| GET    | `/trending` |
+
+Returns trending AI companies.
+
+---
+
+### Statistics
+
+| Method | Endpoint |
+| ------ | -------- |
+| GET    | `/stats` |
+
+Returns ecosystem statistics.
+
+---
+
+### Health
+
+| Method | Endpoint  |
+| ------ | --------- |
+| GET    | `/health` |
+
+Returns server health and uptime.
+
+---
+
+## Authentication
+
+Protected endpoints require a Bearer token.
+
+```
+Authorization: Bearer YOUR_API_AUTH_TOKEN
 ```
 
-</details>
+---
 
-**`GET https://graphone-backend.onrender.com/api/v1/docs`**
+## Swagger Documentation
 
-Interactive Swagger/OpenAPI documentation UI.
-
-## Project Structure
+Interactive API documentation is available at:
 
 ```
-├── server.js                # Entry point
-├── src/
-│   ├── config/              # Configuration, database, swagger, migrations
-│   ├── constants/           # Enums and constants
-│   ├── controllers/         # Request handlers
-│   ├── middleware/          # Auth, cache, rate limiting, validation, error handling
-│   ├── routes/              # Route definitions
-│   ├── services/            # Business logic and database queries
-│   ├── utils/               # ApiError, ApiResponse, asyncHandler
-│   ├── validators/          # Request validation rules
-│   └── seed/                # Seed data and runner
+/api/v1/docs
 ```
 
-## Scripts
+---
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start with nodemon (hot reload) |
-| `npm start` | Start production server |
-| `npm run migrate` | Run database migrations |
-| `npm run seed` | Seed database with sample data |
+## Available Scripts
+
+| Command         | Description              |
+| --------------- | ------------------------ |
+| npm run dev     | Start development server |
+| npm start       | Start production server  |
+| npm run migrate | Run database migrations  |
+| npm run seed    | Populate the database    |
+
+---
+
+## Deployment
+
+Backend: Render
+
+Database: Supabase PostgreSQL
+
+---
 
 ## License
 
