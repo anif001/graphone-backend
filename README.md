@@ -311,5 +311,10 @@ Backend: Render
 Database: Supabase PostgreSQL
 
 ---
+---
+## What would you build next if you had 2 more days?
 
+If I had two more days, I would improve the search functionality, add more test cases, enhance the API documentation, and optimize the application for better performance.
+
+---
 
