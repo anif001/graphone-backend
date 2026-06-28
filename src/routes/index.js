@@ -6,6 +6,7 @@ const productsRouter = require('./products');
 const foundersRouter = require('./founders');
 const newsRouter = require('./news');
 const searchRouter = require('./search');
+const feedRouter = require('./feed');
 
 const router = Router();
 
@@ -26,6 +27,7 @@ router.use('/products', productsRouter);
 router.use('/founders', foundersRouter);
 router.use('/news', newsRouter);
 router.use('/search', searchRouter);
+router.use('/feed', feedRouter);
 
 router.get('/health', (req, res) => {
   const response = new ApiResponse(200, {
