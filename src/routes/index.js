@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const ApiResponse = require('../utils/ApiResponse');
 const companiesRouter = require('./companies');
+const investorsRouter = require('./investors');
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.get('/', (req, res) => {
 });
 
 router.use('/companies', companiesRouter);
+router.use('/investors', investorsRouter);
 
 router.get('/health', (req, res) => {
   const response = new ApiResponse(200, {

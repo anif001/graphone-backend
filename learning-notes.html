@@ -201,6 +201,7 @@
       <a href="#phase2">Phase 2: Database Schema</a>
       <a href="#phase3">Phase 3: Seed Database</a>
       <a href="#phase4">Phase 4: Companies Module</a>
+      <a href="#phase5">Phase 5: Investors Module</a>
     </nav>
   </aside>
 
@@ -220,7 +221,7 @@
       <div class="progress-dot completed" title="Phase 2: Complete">2</div>
       <div class="progress-dot completed" title="Phase 3: Complete">3</div>
       <div class="progress-dot completed" title="Phase 4: Complete">4</div>
-      <div class="progress-dot pending" title="Phase 5">5</div>
+      <div class="progress-dot completed" title="Phase 5: Complete">5</div>
       <div class="progress-dot pending" title="Phase 6">6</div>
       <div class="progress-dot pending" title="Phase 7">7</div>
       <div class="progress-dot pending" title="Phase 8">8</div>
@@ -990,6 +991,63 @@ JSON response</code></pre>
     <h3>Mini Revision</h3>
     <div class="card">
       <p><strong>Phase 4</strong> built the Companies API module with listing (paginated, searchable) and detail (with 6 relationship sets). The service layer handles all database queries with parallel Promise.all for optimal performance. The database client was refactored to use lazy initialization. The module follows the routes → controllers → services pattern, ready for replication in Phases 5-8 for investors, products, founders, and news.</p>
+    </div>
+
+    <!-- ======================== PHASE 5 ======================== -->
+    <h2 id="phase5">Phase 5: Investors Module</h2>
+
+    <h3>Goal</h3>
+    <p>Build the Investors API module following the same pattern as the Companies module. Expose endpoints to list investors with filtering and retrieve an investor's full profile including portfolio companies and funding rounds they led.</p>
+
+    <h3>Features Built</h3>
+    <ul>
+      <li><code>GET /api/v1/investors</code> — List investors with pagination, search, type filter, and sorting</li>
+      <li><code>GET /api/v1/investors/:slug</code> — Investor profile with portfolio companies and led funding rounds</li>
+      <li>Type filter (<code>?type=VC</code>, <code>?type=Angel</code>, etc.) matching the database CHECK constraint</li>
+    </ul>
+
+    <h3>Files Created</h3>
+    <table>
+      <tr><th>File</th><th>Purpose</th></tr>
+      <tr><td><code>src/routes/investors.js</code></td><td>Route definitions: <code>GET /</code> and <code>GET /:slug</code></td></tr>
+      <tr><td><code>src/controllers/investors.js</code></td><td>Request handlers with query param parsing and error handling</td></tr>
+      <tr><td><code>src/services/investors.js</code></td><td>3 query methods: findBySlug, findAll, getPortfolioCompanies, getLedFundingRounds</td></tr>
+    </table>
+
+    <h3>API Endpoints</h3>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>Query Params</th><th>Description</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/investors</code></td><td><code>page, limit, search, type, sortBy, sortOrder</code></td><td>Paginated list of investors with type filter</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/investors/:slug</code></td><td>—</td><td>Investor profile with portfolio and led rounds</td></tr>
+    </table>
+
+    <h3>Request Flow: GET /investors/a16z</h3>
+    <pre><code>Client → /api/v1/investors/andreessen-horowitz
+  ↓
+Route → investorsController.getInvestorBySlug
+  ↓
+investorsService.findBySlug('andreessen-horowitz')
+  ↓
+Promise.all([
+  getPortfolioCompanies(id),  → company_investors ⋈ companies
+  getLedFundingRounds(id),    → funding_rounds WHERE lead_investor_id
+])
+  ↓
+{ investor, portfolioCompanies, ledFundingRounds }</code></pre>
+
+    <h3>Interview Questions</h3>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">1. How does the type filter work with Supabase?</div>
+      <div class="qa-a">The query parameter <code>?type=VC</code> maps to <code>supabase.from('investors').eq('type', 'VC')</code>. This leverages the CHECK constraint <code>CHECK (type IN ('VC', 'Angel', 'Corporate', 'Accelerator', 'Other'))</code> at the database level, ensuring only valid types are queried.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">2. Why does getPortfolioCompanies filter out nulls with .filter(Boolean)?</div>
+      <div class="qa-a">If the Supabase join returns a row where the nested <code>companies</code> data is null (e.g., a company was deleted), we filter it out to avoid returning null entries in the portfolio array.</div>
+    </div>
+
+    <h3>Mini Revision</h3>
+    <div class="card">
+      <p><strong>Phase 5</strong> built the Investors module with the same routes → controllers → services pattern as companies. Supports type-based filtering and returns portfolio companies + led funding rounds on the detail endpoint. Ready for Phase 6 (Products Module).</p>
     </div>
 
   </main>
