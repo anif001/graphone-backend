@@ -6,6 +6,7 @@ const compression = require('compression');
 const config = require('./src/config');
 const rootRouter = require('./src/routes');
 const { errorHandler, notFoundHandler } = require('./src/middleware');
+const { generalLimiter } = require('./src/middleware/rateLimiter');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(compression());
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
+app.use(generalLimiter);
 
 app.use('/api/v1', rootRouter);
 
