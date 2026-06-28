@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraphOne - Learning Notes</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8f9fc;
+      --surface: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --border: #e5e7eb;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --sidebar-w: 280px;
+      --header-h: 60px;
+    }
+    .dark {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --primary: #818cf8;
+      --primary-light: #1e1b4b;
+      --border: #334155;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
+      background: var(--surface); border-right: 1px solid var(--border);
+      overflow-y: auto; z-index: 100; padding: 0;
+      transition: transform .3s;
+    }
+    .sidebar-header {
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sidebar-header h1 { font-size: 18px; font-weight: 700; }
+    .sidebar-search {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+    }
+    .sidebar-search input {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--bg); color: var(--text);
+      font-size: 13px; outline: none;
+    }
+    .sidebar-search input:focus { border-color: var(--primary); }
+    .sidebar-nav { padding: 8px 0; }
+    .sidebar-nav a {
+      display: block; padding: 8px 24px; color: var(--text-muted);
+      text-decoration: none; font-size: 13px; transition: all .2s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      color: var(--primary); background: var(--primary-light); border-left-color: var(--primary);
+    }
+    .sidebar-nav .nav-heading {
+      padding: 16px 24px 4px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);
+    }
+
+    /* Main */
+    .main {
+      margin-left: var(--sidebar-w); flex: 1; min-height: 100vh;
+      padding: 40px 48px 100px; max-width: 960px;
+    }
+    .main h2 { font-size: 28px; font-weight: 800; margin: 48px 0 16px; }
+    .main h2:first-child { margin-top: 0; }
+    .main h3 { font-size: 20px; font-weight: 700; margin: 32px 0 12px; }
+    .main h4 { font-size: 16px; font-weight: 600; margin: 24px 0 8px; }
+    .main p { margin-bottom: 16px; color: var(--text-muted); }
+    .main ul, .main ol { margin-bottom: 16px; padding-left: 24px; color: var(--text-muted); }
+    .main li { margin-bottom: 6px; }
+
+    /* Progress Tracker */
+    .progress-tracker {
+      display: flex; gap: 6px; margin: 20px 0 32px; flex-wrap: wrap;
+    }
+    .progress-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+    }
+    .progress-dot.completed { background: var(--success); }
+    .progress-dot.current { background: var(--primary); }
+    .progress-dot.pending { background: var(--border); color: var(--text-muted); }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; margin-bottom: 20px;
+    }
+    .card-title { font-weight: 600; margin-bottom: 12px; font-size: 15px; }
+
+    /* Code */
+    code {
+      background: var(--primary-light); color: var(--primary);
+      padding: 2px 6px; border-radius: 4px; font-size: 13px;
+    }
+    pre {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; overflow-x: auto;
+      margin-bottom: 20px; font-size: 13px;
+    }
+    pre code { background: none; padding: 0; color: var(--text); }
+
+    /* Phase Card (collapsible) */
+    .phase-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 16px; overflow: hidden;
+    }
+    .phase-header {
+      padding: 16px 20px; cursor: pointer; display: flex;
+      align-items: center; justify-content: space-between;
+      font-weight: 600; font-size: 15px; user-select: none;
+    }
+    .phase-header:hover { background: var(--primary-light); }
+    .phase-header .toggle { transition: transform .2s; font-size: 12px; }
+    .phase-header.open .toggle { transform: rotate(90deg); }
+    .phase-body { display: none; padding: 0 20px 20px; }
+    .phase-body.open { display: block; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--primary-light); font-weight: 600; color: var(--primary); }
+    tr:hover { background: var(--bg); }
+
+    /* Search highlight */
+    .highlight { background: var(--accent); padding: 0 2px; border-radius: 2px; }
+
+    /* Dark mode toggle */
+    .theme-toggle {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none;
+      font-size: 20px; cursor: pointer; z-index: 200;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2); display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    /* Folder structure */
+    .folder-tree { font-family: monospace; font-size: 13px; line-height: 1.8; margin-bottom: 20px; }
+    .folder-tree .dir { color: var(--primary); }
+    .folder-tree .file { color: var(--text); }
+    .folder-tree .indent { padding-left: 24px; }
+
+    /* Badge */
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: 600;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-primary { background: var(--primary-light); color: var(--primary); }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+
+    /* Interview Q&A */
+    .qa-item { margin-bottom: 12px; }
+    .qa-q { font-weight: 600; cursor: pointer; padding: 8px 0; }
+    .qa-q:hover { color: var(--primary); }
+    .qa-a { display: none; padding: 8px 12px; background: var(--bg); border-radius: 8px; margin-top: 4px; font-size: 14px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>GraphOne</h1>
+      <span style="font-size:11px;color:var(--text-muted)">v1.0.0</span>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="searchInput" placeholder="Search notes..." oninput="searchNotes(this.value)">
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-heading">Overview</div>
+      <a href="#overview">Project Overview</a>
+      <a href="#progress">Progress Tracker</a>
+      <div class="nav-heading">Phases</div>
+      <a href="#phase1">Phase 1: Project Setup</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main" id="mainContent">
+    <h2 id="overview">Project Overview</h2>
+    <p><strong>GraphOne</strong> is an AI Ecosystem Platform — similar to Crunchbase but focused exclusively on AI companies. It stores and connects AI companies, investors, founders, products, funding rounds, and news articles, exposing APIs for a frontend to retrieve interconnected information.</p>
+
+    <div class="card">
+      <div class="card-title">Tech Stack</div>
+      <p><span class="badge badge-primary">Node.js</span> <span class="badge badge-primary">Express 5</span> <span class="badge badge-primary">Supabase</span> <span class="badge badge-primary">PostgreSQL</span></p>
+    </div>
+
+    <h3 id="progress">Progress Tracker</h3>
+    <div class="progress-tracker">
+      <div class="progress-dot completed" title="Phase 1: Complete">1</div>
+      <div class="progress-dot pending" title="Phase 2">2</div>
+      <div class="progress-dot pending" title="Phase 3">3</div>
+      <div class="progress-dot pending" title="Phase 4">4</div>
+      <div class="progress-dot pending" title="Phase 5">5</div>
+      <div class="progress-dot pending" title="Phase 6">6</div>
+      <div class="progress-dot pending" title="Phase 7">7</div>
+      <div class="progress-dot pending" title="Phase 8">8</div>
+      <div class="progress-dot pending" title="Phase 9">9</div>
+      <div class="progress-dot pending" title="Phase 10">10</div>
+      <div class="progress-dot pending" title="Phase 11">11</div>
+      <div class="progress-dot pending" title="Phase 12">12</div>
+      <div class="progress-dot pending" title="Phase 13">13</div>
+      <div class="progress-dot pending" title="Phase 14">14</div>
+      <div class="progress-dot pending" title="Phase 15">15</div>
+      <div class="progress-dot pending" title="Phase 16">16</div>
+      <div class="progress-dot pending" title="Phase 17">17</div>
+      <div class="progress-dot pending" title="Phase 18">18</div>
+      <div class="progress-dot pending" title="Phase 19">19</div>
+    </div>
+
+    <!-- ======================== PHASE 1 ======================== -->
+    <h2 id="phase1">Phase 1: Project Setup & Architecture</h2>
+
+    <h3>Goal</h3>
+    <p>Set up the foundational backend project with Express, folder structure, configuration, middleware, and utility modules. Establish the architectural patterns that will be followed throughout the project.</p>
+
+    <h3>Features Built</h3>
+    <ul>
+      <li>Express 5 server with production middleware (CORS, Helmet, Morgan, Compression)</li>
+      <li>Centralized configuration via environment variables</li>
+      <li>Supabase database client initialization</li>
+      <li>Custom error handling (ApiError, errorHandler, notFoundHandler)</li>
+      <li>Standardized API response format (ApiResponse)</li>
+      <li>Async handler wrapper for clean controller code</li>
+      <li>Root health-check endpoints</li>
+    </ul>
+
+    <h3>Folder Structure</h3>
+    <div class="folder-tree">
+      <div class="dir">GraphOne/</div>
+      <div class="dir indent">├── src/</div>
+      <div class="dir indent">│   ├── config/</div>
+      <div class="file indent">│   │   ├── index.js</div>
+      <div class="file indent">│   │   └── database.js</div>
+      <div class="dir indent">│   ├── controllers/</div>
+      <div class="dir indent">│   ├── routes/</div>
+      <div class="file indent">│   │   └── index.js</div>
+      <div class="dir indent">│   ├── services/</div>
+      <div class="dir indent">│   ├── middleware/</div>
+      <div class="file indent">│   │   └── index.js</div>
+      <div class="dir indent">│   ├── validators/</div>
+      <div class="dir indent">│   ├── utils/</div>
+      <div class="file indent">│   │   ├── ApiError.js</div>
+      <div class="file indent">│   │   ├── ApiResponse.js</div>
+      <div class="file indent">│   │   └── asyncHandler.js</div>
+      <div class="dir indent">│   ├── constants/</div>
+      <div class="dir indent">│   ├── cache/</div>
+      <div class="dir indent">│   ├── seed/</div>
+      <div class="dir indent">│   └── docs/</div>
+      <div class="file indent">├── .env</div>
+      <div class="file indent">├── .env.example</div>
+      <div class="file indent">├── .gitignore</div>
+      <div class="file indent">├── package.json</div>
+      <div class="file indent">├── server.js</div>
+      <div class="file indent">└── learning-notes.html</div>
+    </div>
+
+    <h3>Files Created</h3>
+    <table>
+      <tr><th>File</th><th>Purpose</th></tr>
+      <tr><td><code>package.json</code></td><td>Project metadata, scripts (dev, start), dependencies</td></tr>
+      <tr><td><code>server.js</code></td><td>Express app entry point — registers middleware, mounts routes, starts server</td></tr>
+      <tr><td><code>.env</code> / <code>.env.example</code></td><td>Environment variables (port, Supabase keys, CORS, rate limit, cache)</td></tr>
+      <tr><td><code>src/config/index.js</code></td><td>Loads and freezes all env config into a single module</td></tr>
+      <tr><td><code>src/config/database.js</code></td><td>Creates and exports the Supabase client instance</td></tr>
+      <tr><td><code>src/middleware/index.js</code></td><td>Global error handler + 404 not-found handler</td></tr>
+      <tr><td><code>src/utils/ApiError.js</code></td><td>Custom error class with statusCode, isOperational flag</td></tr>
+      <tr><td><code>src/utils/ApiResponse.js</code></td><td>Standardized success response wrapper</td></tr>
+      <tr><td><code>src/utils/asyncHandler.js</code></td><td>Wraps async route handlers to catch errors automatically</td></tr>
+      <tr><td><code>src/routes/index.js</code></td><td>Root router with GET / and GET /health endpoints</td></tr>
+      <tr><td><code>.gitignore</code></td><td>Ignores node_modules, .env, logs, build artifacts</td></tr>
+    </table>
+
+    <h3>Database Changes</h3>
+    <p>None in this phase. Phase 2 will create the schema and migrations.</p>
+
+    <h3>API Endpoints</h3>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+      <tr><td>GET</td><td><code>/api/v1</code></td><td>Returns API name, version, status, timestamp</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/health</code></td><td>Returns server uptime and current timestamp</td></tr>
+    </table>
+
+    <h3>Request Flow</h3>
+    <pre><code>Client
+  ↓
+Express Server (server.js)
+  ↓
+helmet() → cors() → compression() → json() → urlencoded() → morgan()
+  ↓
+Route: /api/v1/*
+  ↓
+Controller handler
+  ↓
+ApiResponse wrapper → JSON response</code></pre>
+
+    <h3>Execution Flow</h3>
+    <ol>
+      <li><code>node server.js</code> executes</li>
+      <li>Imports Express and all middleware packages</li>
+      <li>Creates the app and registers middleware in order</li>
+      <li><code>src/config/index.js</code> loads <code>.env</code> via dotenv</li>
+      <li>Root router is mounted at <code>/api/v1</code></li>
+      <li>Server listens on the configured port</li>
+      <li>Incoming request → middleware chain → route → response</li>
+      <li>Unmatched routes → 404 handler → error handler</li>
+    </ol>
+
+    <h3>Why This Design</h3>
+    <ul>
+      <li><strong>Centralized config</strong>: All env vars in one frozen object prevents scattered <code>process.env</code> calls</li>
+      <li><strong>ApiResponse / ApiError</strong>: Every response has a consistent shape — the frontend always knows what to expect</li>
+      <li><strong>asyncHandler</strong>: Eliminates try-catch boilerplate in every controller</li>
+      <li><strong>isOperational flag</strong>: Distinguishes expected errors (validation, 404) from unexpected bugs — avoids leaking stack traces in production</li>
+      <li><strong>Modular folder structure</strong>: Each concern (routes, controllers, services) has its own directory — scales cleanly across 19 phases</li>
+    </ul>
+
+    <h3>Important Code Explained</h3>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span>ApiError class (<code>src/utils/ApiError.js</code>)</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>Extends the native Error class with <code>statusCode</code>, <code>details</code>, and <code>isOperational</code>. The <code>isOperational</code> flag is critical — it tells the error handler whether to expose the error message to the client (operational) or return a generic 500 (programmer error). The <code>Error.captureStackTrace</code> ensures the stack trace starts from where the error was thrown, not from the ApiError constructor.</p>
+        <pre><code>throw new ApiError(404, 'Company not found');</code></pre>
+        <p>In the error handler middleware, we check <code>err.isOperational</code> to decide the response shape.</p>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span>asyncHandler (<code>src/utils/asyncHandler.js</code>)</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>Wraps an async function and catches any rejected promise, forwarding it to Express's error middleware via <code>next()</code>. Without this, an error thrown in an async route handler would cause an unhandled promise rejection and crash the process.</p>
+        <pre><code>const getCompany = asyncHandler(async (req, res) => {
+  const company = await companyService.findById(req.params.id);
+  res.json(new ApiResponse(200, company));
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span>Error handler middleware (<code>src/middleware/index.js</code>)</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>Express error-handling middleware has 4 parameters: <code>(err, req, res, next)</code>. The first argument is checked for <code>isOperational</code>. In development, the full stack trace is included in the response. In production, only the message is shown for operational errors, and a generic "Internal Server Error" for programming errors.</p>
+        <pre><code>if (!err.isOperational) {
+  statusCode = 500;
+  message = 'Internal Server Error';
+  details = null;
+}</code></pre>
+      </div>
+    </div>
+
+    <h3>Common Bugs</h3>
+    <ul>
+      <li><strong>Missing dotenv call</strong>: If <code>dotenv.config()</code> is not called early, <code>process.env</code> will be undefined and the app defaults will be used silently.</li>
+      <li><strong>Middleware order</strong>: If <code>express.json()</code> comes after routes, request bodies will be undefined.</li>
+      <li><strong>Not calling <code>next()</code></strong>: If an error handler doesn't call <code>next(err)</code>, Express will hang.</li>
+      <li><strong>Express 5 route changes</strong>: Express 5 removed string-based regex patterns in routes (e.g., <code>/user/:id(\\d+)</code>). Use path-to-regexp compatible syntax instead.</li>
+    </ul>
+
+    <h3>Debugging Tips</h3>
+    <ul>
+      <li>Run <code>npm run dev</code> — nodemon auto-restarts on file changes.</li>
+      <li>Check the terminal for Morgan logs: <code>GET /api/v1/health 200 2.882 ms</code>.</li>
+      <li>Use <code>console.log</code> inside middleware to trace the request path.</li>
+      <li>Set <code>NODE_ENV=development</code> to see stack traces in error responses.</li>
+    </ul>
+
+    <h3>Interview Questions</h3>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">1. Why do we freeze the config object with Object.freeze?</div>
+      <div class="qa-a">To prevent any part of the application from accidentally mutating configuration at runtime. Once frozen, properties cannot be added, deleted, or changed, ensuring configuration remains predictable and bug-free.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">2. What is the purpose of isOperational in ApiError?</div>
+      <div class="qa-a">It distinguishes expected errors (validation failures, 404s, authentication failures) from unexpected programmer errors (null reference, undefined variable). Operational errors return meaningful messages to the client; programmer errors return a generic 500 with no details, preventing information leakage.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">3. What happens if asyncHandler is not used in an async route handler?</div>
+      <div class="qa-a">If an async route handler throws an error, Express will not catch it because async functions return a promise. The error becomes an unhandled promise rejection, which Node.js will eventually log and crash the process (or, in recent versions, emit an unhandledRejection event).</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">4. Why is helmet() important in production?</div>
+      <div class="qa-a">Helmet sets various HTTP security headers (Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, etc.) that protect against common web vulnerabilities like cross-site scripting (XSS), clickjacking, and MIME-type sniffing.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">5. How does compression help our API?</div>
+      <div class="qa-a">It gzip-compresses response bodies, reducing bandwidth by 60-80% for JSON responses. This speeds up API response times for the frontend, especially for large payloads like company details with nested relations.</div>
+    </div>
+
+    <h3>Key Takeaways</h3>
+    <ul>
+      <li>Always centralize configuration — never scatter <code>process.env</code> across files.</li>
+      <li>Standardize API responses — frontend teams love predictable shapes.</li>
+      <li>Use asyncHandler to avoid try-catch in every controller.</li>
+      <li>Distinguish operational vs programmer errors for secure error handling.</li>
+      <li>Middleware order matters: security → parsing → logging → routes → 404 → error.</li>
+    </ul>
+
+    <h3>Production Insights</h3>
+    <ul>
+      <li>In production, set <code>NODE_ENV=production</code> to disable stack traces.</li>
+      <li>Use a process manager like PM2 to keep the server alive on crashes.</li>
+      <li>Consider <code>express-rate-limit</code> (Phase 15) to prevent abuse.</li>
+      <li>Always validate environment variables on startup — crash early if Supabase keys are missing.</li>
+      <li>Use <code>helmet()</code> with custom CSP for frontend domains.</li>
+    </ul>
+
+    <h3>Mini Revision</h3>
+    <div class="card">
+      <p><strong>Phase 1</strong> established the project foundation: Express 5 server, centralized config, Supabase client, standardized error/response classes, async error wrapper, and health endpoints. The architecture follows a layered pattern (routes → controllers → services → database) that scales across all 19 phases.</p>
+    </div>
+
+  </main>
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+
+  <script>
+    // Collapsible phase cards
+    function togglePhase(header) {
+      header.classList.toggle('open');
+      const body = header.nextElementSibling;
+      body.classList.toggle('open');
+    }
+
+    // Collapsible Q&A
+    function toggleAnswer(q) {
+      const a = q.nextElementSibling;
+      a.style.display = a.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Dark mode
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const btn = document.querySelector('.theme-toggle');
+      btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    }
+
+    // Search
+    function searchNotes(query) {
+      const content = document.getElementById('mainContent');
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+      const matches = [];
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.parentElement.closest('.sidebar')) continue;
+        const text = node.textContent.toLowerCase();
+        if (query && text.includes(query.toLowerCase())) {
+          node.parentElement.style.display = '';
+          node.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    // Active section highlighting
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+          const id = entry.target.id;
+          const link = document.querySelector(`.sidebar-nav a[href="#${id}"]`);
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-80px 0px -80% 0px' });
+
+    document.querySelectorAll('h2[id], h3[id]').forEach(el => observer.observe(el));
+
+    // Auto-open phase cards on anchor hash
+    if (location.hash) {
+      const target = document.querySelector(location.hash);
+      if (target) {
+        setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    }
+  </script>
+</body>
+</html>
