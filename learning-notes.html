@@ -205,6 +205,17 @@
       <a href="#phase6">Phase 6: Products Module</a>
       <a href="#phase7">Phase 7: Founders Module</a>
       <a href="#phase8">Phase 8: News Module</a>
+      <a href="#phase9">Phase 9: Search API</a>
+      <a href="#phase10">Phase 10: Feed API</a>
+      <a href="#phase11">Phase 11: Trending</a>
+      <a href="#phase12">Phase 12: Statistics API</a>
+      <a href="#phase13">Phase 13: Auth</a>
+      <a href="#phase14">Phase 14: Validation</a>
+      <a href="#phase15">Phase 15: Rate Limiting</a>
+      <a href="#phase16">Phase 16: Caching</a>
+      <a href="#phase17">Phase 17: Swagger</a>
+      <a href="#phase18">Phase 18: Deployment</a>
+      <a href="#phase19">Phase 19: README</a>
     </nav>
   </aside>
 
@@ -228,17 +239,17 @@
       <div class="progress-dot completed" title="Phase 6: Complete">6</div>
       <div class="progress-dot completed" title="Phase 7: Complete">7</div>
       <div class="progress-dot completed" title="Phase 8: Complete">8</div>
-      <div class="progress-dot pending" title="Phase 9">9</div>
-      <div class="progress-dot pending" title="Phase 10">10</div>
-      <div class="progress-dot pending" title="Phase 11">11</div>
-      <div class="progress-dot pending" title="Phase 12">12</div>
-      <div class="progress-dot pending" title="Phase 13">13</div>
-      <div class="progress-dot pending" title="Phase 14">14</div>
-      <div class="progress-dot pending" title="Phase 15">15</div>
-      <div class="progress-dot pending" title="Phase 16">16</div>
-      <div class="progress-dot pending" title="Phase 17">17</div>
-      <div class="progress-dot pending" title="Phase 18">18</div>
-      <div class="progress-dot pending" title="Phase 19">19</div>
+      <div class="progress-dot completed" title="Phase 9: Complete">9</div>
+      <div class="progress-dot completed" title="Phase 10: Complete">10</div>
+      <div class="progress-dot completed" title="Phase 11: Complete">11</div>
+      <div class="progress-dot completed" title="Phase 12: Complete">12</div>
+      <div class="progress-dot completed" title="Phase 13: Complete">13</div>
+      <div class="progress-dot completed" title="Phase 14: Complete">14</div>
+      <div class="progress-dot completed" title="Phase 15: Complete">15</div>
+      <div class="progress-dot completed" title="Phase 16: Complete">16</div>
+      <div class="progress-dot completed" title="Phase 17: Complete">17</div>
+      <div class="progress-dot completed" title="Phase 18: Complete">18</div>
+      <div class="progress-dot completed" title="Phase 19: Complete">19</div>
     </div>
 
     <!-- ======================== PHASE 1 ======================== -->
@@ -1079,6 +1090,93 @@ Promise.all([
       <tr><td>GET /api/v1/news</td><td>page, limit, search, source, sortBy, sortOrder</td><td>List news articles</td></tr>
       <tr><td>GET /api/v1/news/:slug</td><td>—</td><td>Article with companies</td></tr>
     </table>
+
+    <!-- ======================== PHASE 9 ======================== -->
+    <h2 id="phase9">Phase 9: Search API</h2>
+    <p>Unified <code>GET /api/v1/search?q=</code> endpoint that searches across all 5 entity types (companies, investors, founders, products, news) simultaneously via <code>Promise.all</code>. Returns results grouped by type with configurable per-type limit (default 5, max 20).</p>
+    <table>
+      <tr><th>Endpoint</th><th>Params</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/search</td><td>q (min 2 chars), limit</td><td>Returns { query, companies, investors, founders, products, news }</td></tr>
+    </table>
+    <p><strong>Files:</strong> <code>src/services/search.js</code>, <code>src/controllers/search.js</code>, <code>src/routes/search.js</code>. Uses <code>.ilike</code> pattern matching on name and description fields.</p>
+
+    <!-- ======================== PHASE 10 ======================== -->
+    <h2 id="phase10">Phase 10: Feed API</h2>
+    <p>Chronological activity feed combining news articles, funding rounds, and product launches into a single sorted timeline. <code>GET /api/v1/feed</code> with pagination (max 50 per page).</p>
+    <table>
+      <tr><th>Endpoint</th><th>Params</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/feed</td><td>page, limit</td><td>Mixed feed of news, funding, and product events</td></tr>
+    </table>
+    <p><strong>Files:</strong> <code>src/services/feed.js</code>, <code>src/controllers/feed.js</code>, <code>src/routes/feed.js</code>. Items have <code>type</code> field: <code>news</code>, <code>funding</code>, or <code>product</code>. Helper <code>formatAmount()</code> renders dollar values in human-readable form (e.g., "$1.5B").</p>
+
+    <!-- ======================== PHASE 11 ======================== -->
+    <h2 id="phase11">Phase 11: Trending Algorithm</h2>
+    <p><code>GET /api/v1/trending</code> returns companies scored by recent ecosystem activity. Scoring: news articles ×3, funding rounds ×5, product launches ×2 within a configurable lookback window (default 30 days).</p>
+    <table>
+      <tr><th>Endpoint</th><th>Params</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/trending</td><td>limit (max 50), days (max 365)</td><td>Companies sorted by trendingScore descending</td></tr>
+    </table>
+    <p><strong>Files:</strong> <code>src/services/trending.js</code>, <code>src/controllers/trending.js</code>, <code>src/routes/trending.js</code>. Fetches news/funding/product counts per company, weights them, and sorts by total score.</p>
+
+    <!-- ======================== PHASE 12 ======================== -->
+    <h2 id="phase12">Phase 12: Statistics API</h2>
+    <p><code>GET /api/v1/stats</code> returns aggregate ecosystem statistics: total counts for each entity type, total USD funding, investor type breakdown, and product category breakdown.</p>
+    <table>
+      <tr><th>Endpoint</th><th>Description</th></tr>
+      <tr><td>GET /api/v1/stats</td><td>Returns totalCompanies, totalInvestors, totalFundingUSD, investorTypeBreakdown, productCategoryBreakdown, etc.</td></tr>
+    </table>
+    <p><strong>Files:</strong> <code>src/services/stats.js</code>, <code>src/controllers/stats.js</code>, <code>src/routes/stats.js</code>. Uses Supabase <code>count: 'exact', head: true</code> for fast count queries.</p>
+
+    <!-- ======================== PHASE 13 ======================== -->
+    <h2 id="phase13">Phase 13: Authentication</h2>
+    <p>Bearer token authentication middleware. A global auth token (<code>API_AUTH_TOKEN</code> env var) protects endpoints.</p>
+    <ul>
+      <li><strong>authMiddleware</strong>: Requires valid Bearer token, throws 401 if missing/invalid</li>
+      <li><strong>optionalAuth</strong>: Attaches user info if token present, but doesn't reject unauthenticated requests</li>
+      <li>Configurable: production uses <code>API_AUTH_TOKEN</code> from env, development uses a hardcoded dev token</li>
+    </ul>
+    <p><strong>Files:</strong> <code>src/middleware/auth.js</code>, installed <code>jsonwebtoken</code> package. Constants file created at <code>src/constants/index.js</code> with <code>ROLES</code>, <code>INVESTOR_TYPES</code>, <code>PRODUCT_CATEGORIES</code> enums.</p>
+
+    <!-- ======================== PHASE 14 ======================== -->
+    <h2 id="phase14">Phase 14: Validation</h2>
+    <p>Request validation using <code>express-validator</code>. All query parameters and path parameters are validated before reaching controllers.</p>
+    <ul>
+      <li><strong>pagination</strong>: page ≥1, limit 1-100</li>
+      <li><strong>slugParam</strong>: non-empty string</li>
+      <li><strong>searchQuery</strong>: q ≥2 chars, limit 1-20</li>
+      <li><strong>companiesList, investorsList, productsList, foundersList, newsList</strong>: type-specific validators</li>
+    </ul>
+    <p><strong>validate()</strong> middleware runs all validators and throws ApiError(400) with joined messages on failure. <strong>Files:</strong> <code>src/validators/index.js</code>, <code>src/middleware/validate.js</code>.</p>
+
+    <!-- ======================== PHASE 15 ======================== -->
+    <h2 id="phase15">Phase 15: Rate Limiting</h2>
+    <p>Rate limiting via <code>express-rate-limit</code>. <strong>generalLimiter</strong>: 100 req/15min (production) or 500 req/15min (dev). <strong>authLimiter</strong>: 10 req/hour. Applied globally via <code>app.use(generalLimiter)</code>.</p>
+    <p><strong>Files:</strong> <code>src/middleware/rateLimiter.js</code>, installed <code>express-rate-limit</code>. Returns standard rate limit headers and JSON error responses.</p>
+
+    <!-- ======================== PHASE 16 ======================== -->
+    <h2 id="phase16">Phase 16: Caching</h2>
+    <p>In-memory response caching via <code>node-cache</code>. <strong>cacheMiddleware(duration)</strong> caches GET responses by URL. Configurable TTL per route: list endpoints 60-120s, detail endpoints 120-300s, trending 180s, stats 600s.</p>
+    <ul>
+      <li>Search: 60s, Feed: 60s, News list: 60s</li>
+      <li>Companies/Investors/Products/Founders list: 120s</li>
+      <li>Detail endpoints: 120-300s</li>
+      <li>Trending: 180s, Stats: 600s</li>
+    </ul>
+    <p><strong>Files:</strong> <code>src/middleware/cache.js</code>, installed <code>node-cache</code>. Also exposes <code>clearCache(pattern)</code> and <code>responseCache</code> for manual invalidation.</p>
+
+    <!-- ======================== PHASE 17 ======================== -->
+    <h2 id="phase17">Phase 17: Swagger Documentation</h2>
+    <p>Interactive API docs at <code>GET /api/v1/docs</code> using <code>swagger-ui-express</code>. OpenAPI 3.0.3 specification with all 14 endpoints documented including parameters, response schemas, and security schemes.</p>
+    <p><strong>Files:</strong> <code>src/config/swagger.js</code>, installed <code>swagger-ui-express</code>. Mounted in <code>server.js</code> before API routes for clean URL structure.</p>
+
+    <!-- ======================== PHASE 18 ======================== -->
+    <h2 id="phase18">Phase 18: Deployment</h2>
+    <p>Dockerfile (node:20-alpine) with production-only <code>npm ci</code> and multi-stage build optimization. <code>render.yaml</code> for Render.com deployment with env var configuration.</p>
+    <p><strong>Files:</strong> <code>Dockerfile</code>, <code>.dockerignore</code>, <code>render.yaml</code>. Exposes port 3000, starts with <code>node server.js</code>. Environment variables sync from Render dashboard.</p>
+
+    <!-- ======================== PHASE 19 ======================== -->
+    <h2 id="phase19">Phase 19: README</h2>
+    <p>Comprehensive <code>README.md</code> with project description, quick start guide, environment variables table, full API endpoint reference, project structure tree, and scripts table. Serves as the entry point for new developers and deployment documentation.</p>
 
   </main>
 
