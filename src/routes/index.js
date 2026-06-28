@@ -8,6 +8,7 @@ const newsRouter = require('./news');
 const searchRouter = require('./search');
 const feedRouter = require('./feed');
 const trendingRouter = require('./trending');
+const statsRouter = require('./stats');
 
 const router = Router();
 
@@ -30,6 +31,7 @@ router.use('/news', newsRouter);
 router.use('/search', searchRouter);
 router.use('/feed', feedRouter);
 router.use('/trending', trendingRouter);
+router.use('/stats', statsRouter);
 
 router.get('/health', (req, res) => {
   const response = new ApiResponse(200, {
