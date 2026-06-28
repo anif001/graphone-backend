@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: graphone-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm ci --only=production
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: API_AUTH_TOKEN
+        sync: false
