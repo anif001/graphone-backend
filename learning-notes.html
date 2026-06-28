@@ -199,6 +199,7 @@
       <div class="nav-heading">Phases</div>
       <a href="#phase1">Phase 1: Project Setup</a>
       <a href="#phase2">Phase 2: Database Schema</a>
+      <a href="#phase3">Phase 3: Seed Database</a>
     </nav>
   </aside>
 
@@ -216,7 +217,7 @@
     <div class="progress-tracker">
       <div class="progress-dot completed" title="Phase 1: Complete">1</div>
       <div class="progress-dot completed" title="Phase 2: Complete">2</div>
-      <div class="progress-dot pending" title="Phase 3">3</div>
+      <div class="progress-dot completed" title="Phase 3: Complete">3</div>
       <div class="progress-dot pending" title="Phase 4">4</div>
       <div class="progress-dot pending" title="Phase 5">5</div>
       <div class="progress-dot pending" title="Phase 6">6</div>
@@ -626,6 +627,178 @@ $$ LANGUAGE plpgsql;</code></pre>
     <h3>Mini Revision</h3>
     <div class="card">
       <p><strong>Phase 2</strong> designed the complete database schema with 6 entity tables and 3 junction tables for M:M relationships. The schema uses UUID primary keys, slug-based lookups, foreign key constraints with appropriate delete behaviors, CHECK constraints for data validation, performance indexes, and auto-updating timestamp triggers. A version-controlled migration system was created using raw SQL files and a Node.js runner with <code>pg</code>. The schema is ready for seeding and API development.</p>
+    </div>
+
+    <!-- ======================== PHASE 3 ======================== -->
+    <h2 id="phase3">Phase 3: Seed Real AI Ecosystem Data</h2>
+
+    <h3>Goal</h3>
+    <p>Populate the database with real AI ecosystem data: 52 AI companies, 23 investors, 28 founders, 70 products, 100+ funding rounds, and 100+ news articles. All data is based on real publicly available information from company websites, Crunchbase, TechCrunch, and VentureBeat.</p>
+
+    <h3>Features Built</h3>
+    <ul>
+      <li>Seed data files with real AI ecosystem entities (companies, investors, founders)</li>
+      <li>Seed data files with real products, funding rounds, and news articles</li>
+      <li>Junction table data for M:M relationships (company-investor, company-founder, company-news)</li>
+      <li>Seed runner script (<code>src/seed/seed.js</code>) that handles insertion order respecting FK constraints</li>
+      <li>Slug-based lookup maps to resolve relationships without hardcoded UUIDs</li>
+      <li>Idempotent upsert logic (safe to run multiple times)</li>
+      <li><code>npm run seed</code> script</li>
+    </ul>
+
+    <h3>Folder Structure</h3>
+    <div class="folder-tree">
+      <div class="dir indent">├── src/seed/</div>
+      <div class="file indent">│   ├── seed.js (runner)</div>
+      <div class="dir indent">│   └── data/</div>
+      <div class="file indent">│       ├── companies.js (52 companies)</div>
+      <div class="file indent">│       ├── investors.js (23 investors)</div>
+      <div class="file indent">│       ├── founders.js (28 founders)</div>
+      <div class="file indent">│       ├── products.js (70 products)</div>
+      <div class="file indent">│       ├── fundingRounds.js (100+ rounds)</div>
+      <div class="file indent">│       ├── newsArticles.js (100+ articles)</div>
+      <div class="file indent">│       └── relationships.js (junction data)</div>
+    </div>
+
+    <h3>Files Created</h3>
+    <table>
+      <tr><th>File</th><th>Records</th><th>Description</th></tr>
+      <tr><td><code>src/seed/seed.js</code></td><td>—</td><td>Main runner: clears old data, inserts in FK-safe order, resolves slug→UUID maps</td></tr>
+      <tr><td><code>src/seed/data/companies.js</code></td><td>52</td><td>Real AI companies (OpenAI, Anthropic, DeepMind, NVIDIA, Cohere, etc.)</td></tr>
+      <tr><td><code>src/seed/data/investors.js</code></td><td>23</td><td>Real investors (a16z, Sequoia, YC, SoftBank, Accel, etc.)</td></tr>
+      <tr><td><code>src/seed/data/founders.js</code></td><td>28</td><td>Real founders (Sam Altman, Demis Hassabis, Aidan Gomez, etc.)</td></tr>
+      <tr><td><code>src/seed/data/products.js</code></td><td>70</td><td>Real products (ChatGPT, Claude, Gemini, Stable Diffusion, Copilot, etc.)</td></tr>
+      <tr><td><code>src/seed/data/fundingRounds.js</code></td><td>100+</td><td>Real funding rounds with amounts, dates, and lead investors</td></tr>
+      <tr><td><code>src/seed/data/newsArticles.js</code></td><td>100+</td><td>Real news articles from TechCrunch and VentureBeat</td></tr>
+      <tr><td><code>src/seed/data/relationships.js</code></td><td>250+ links</td><td>Junction table data for M:M relationships</td></tr>
+    </table>
+
+    <h3>Database Changes</h3>
+    <p>No schema changes. Phase 3 populates all 10 tables with real data totaling 500+ records across companies, investors, founders, products, funding rounds, news articles, and their relationships.</p>
+
+    <h3>API Endpoints</h3>
+    <p>None in this phase. APIs begin in Phase 4.</p>
+
+    <h3>Seed Execution Flow</h3>
+    <ol>
+      <li><code>npm run seed</code> triggers <code>src/seed/seed.js</code></li>
+      <li>Connects to Supabase via the JS client with the service role key (bypasses RLS)</li>
+      <li>Clears existing data in reverse FK order (junction tables → funding_rounds → products → entities)</li>
+      <li>Inserts companies (52 records with real names, descriptions, URLs)</li>
+      <li>Inserts investors (23 records with type, description, location)</li>
+      <li>Inserts founders (28 records with bio, social links)</li>
+      <li>Fetches company slugs → UUID mapping for FK resolution</li>
+      <li>Inserts products (70 records linked to companies via slug lookup)</li>
+      <li>Inserts funding rounds (100+ rounds linked to companies and lead investors)</li>
+      <li>Inserts news articles (100+ articles with sources and dates)</li>
+      <li>Inserts junction table records for company_investors, company_founders, company_news</li>
+      <li>Logs summary counts for each entity type</li>
+    </ol>
+
+    <h3>Why This Design</h3>
+    <ul>
+      <li><strong>Slug-based relationships in seed data</strong>: Data files reference entities by slug instead of UUID — this makes the data readable and maintainable. The seed script resolves slugs to UUIDs at runtime.</li>
+      <li><strong>Separation of data from logic</strong>: Each entity type has its own file. Adding a new company or article doesn't require touching the runner script.</li>
+      <li><strong>Idempotent upserts</strong>: Using <code>onConflict</code> with <code>upsert</code> means re-running the seed won't create duplicate rows.</li>
+      <li><strong>Clear in FK order</strong>: Deleting in reverse FK order prevents constraint violations. Inserting in forward FK order ensures parent rows exist before children.</li>
+      <li><strong>Service role key</strong>: Bypasses Row-Level Security (RLS) during seeding. In production, RLS would be enabled and the service key used only for admin operations.</li>
+    </ul>
+
+    <h3>Important Code Explained</h3>
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span>Seed runner FK-safe insertion order</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>The seed script must respect foreign key constraints. The insertion order is:</p>
+        <pre><code>1. companies          (no FK dependencies)
+2. investors           (no FK dependencies)
+3. founders            (no FK dependencies)
+4. products            (FK → companies)
+5. funding_rounds      (FK → companies, FK → investors)
+6. news_articles       (no FK dependencies)
+7. company_investors   (FK → companies, FK → investors)
+8. company_founders    (FK → companies, FK → founders)
+9. company_news        (FK → companies, FK → news_articles)</code></pre>
+        <p>After inserting entities, the script fetches a slug→UUID mapping from the database. This map is used when inserting related records, avoiding the need to hardcode UUIDs in seed data files.</p>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span>Upsert with onConflict</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>Supabase upsert uses the <code>onConflict</code> parameter to specify the unique column for conflict resolution. For most entities, we use <code>slug</code>. For junction tables, we use the composite primary key <code>company_id, investor_id</code>. This ensures the seed is idempotent:</p>
+        <pre><code>await supabase.from('companies').upsert(company, {
+  onConflict: 'slug',
+  ignoreDuplicates: false  // false = update on conflict
+});</code></pre>
+      </div>
+    </div>
+
+    <h3>Common Bugs</h3>
+    <ul>
+      <li><strong>RLS policies blocking inserts</strong>: If RLS is enabled, the Supabase anon key can't insert data. Use the service_role_key for seeding.</li>
+      <li><strong>FK violation on funding rounds</strong>: If a funding round references an investor slug that doesn't exist in the investors table, the lead_investor_id will be null. The script handles this gracefully.</li>
+      <li><strong>Missing slug map entries</strong>: If a product references a company slug that doesn't exist, it's skipped with a warning.</li>
+      <li><strong>Duplicate slugs</strong>: Two entities with the same slug will cause an upsert conflict. Ensure all slugs are unique.</li>
+      <li><strong>Data type mismatches</strong>: Ensure numeric fields (amount_raised, valuation) are numbers, dates are ISO strings, and all required fields are present.</li>
+    </ul>
+
+    <h3>Debugging Tips</h3>
+    <ul>
+      <li>Run <code>npm run seed</code> and check the console output for warnings about skipped records.</li>
+      <li>Use Supabase SQL Editor to verify data: <code>SELECT COUNT(*) FROM companies;</code></li>
+      <li>Check for missing slugs in relationships — the script logs "<code>⚠ Skipping</code>" messages.</li>
+      <li>If a migration hasn't been run, tables won't exist and the seed will fail with "is not present in table".</li>
+    </ul>
+
+    <h3>Interview Questions</h3>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">1. Why use slug-based references in seed data instead of UUIDs?</div>
+      <div class="qa-a">Slugs are human-readable and stable. Hardcoding UUIDs makes seed data unreadable and brittle — if you reseed the database, UUIDs change. Slugs let you write <code>{ companySlug: 'openai' }</code> instead of <code>{ companyId: 'abc-123-...' }</code>.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">2. What is the difference between anon key and service_role key in Supabase?</div>
+      <div class="qa-a">The anon key is for public-facing client requests with RLS enforced. The service_role key bypasses RLS entirely and has full database access. Use service_role for migrations, seeding, and admin operations; never expose it to clients.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">3. Why is insertion order important when seeding relational data?</div>
+      <div class="qa-a">Foreign key constraints require that parent rows exist before child rows. Inserting a product before its company violates the FK constraint. Similarly, when deleting, children must be removed before parents (or use ON DELETE CASCADE).</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">4. How would you handle seeding 10,000+ records efficiently?</div>
+      <div class="qa-a">For large datasets, use batch inserts (chunking 500-1000 records at a time) or use PostgreSQL's COPY command for bulk loading. The Supabase JS client can batch via <code>.insert()</code> with an array of records. For very large datasets, use a direct PostgreSQL connection with COPY.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">5. What if you need to update seed data after deployment?</div>
+      <div class="qa-a">Create incremental seed scripts (002_update_data.js) that run after the initial seed. Alternatively, use upsert logic so re-running the seed updates existing records without creating duplicates. Always test seed updates on staging first.</div>
+    </div>
+
+    <h3>Key Takeaways</h3>
+    <ul>
+      <li>Seed data should be based on real information, not random fakes — this makes development and testing meaningful.</li>
+      <li>Use slug-based references in seed files for readability and maintainability.</li>
+      <li>Always respect FK constraints — insert parents before children, delete children before parents.</li>
+      <li>Make seeds idempotent — running them multiple times should be safe.</li>
+      <li>Separate seed data (JSON/JS files) from seed logic (runner script).</li>
+    </ul>
+
+    <h3>Production Insights</h3>
+    <ul>
+      <li>Never use service_role_key in client-side code — it grants full database access.</li>
+      <li>For production deployments, run seeds as part of your CI/CD pipeline, not manually.</li>
+      <li>Consider using Supabase studio or a seed management tool for team collaboration.</li>
+      <li>Always have a rollback plan — test seeding on a staging environment first.</li>
+      <li>Monitor seed execution time; optimize by batching inserts for large datasets.</li>
+    </ul>
+
+    <h3>Mini Revision</h3>
+    <div class="card">
+      <p><strong>Phase 3</strong> populated the database with 500+ real AI ecosystem records across 8 data files. The seed runner inserts data in FK-safe order using slug-based references, upsert logic for idempotency, and slug→UUID maps for relationship resolution. All data is based on real publicly available information. The database is now ready for API development starting in Phase 4.</p>
     </div>
 
   </main>
