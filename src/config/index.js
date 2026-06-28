@@ -10,6 +10,7 @@ const config = Object.freeze({
     url: process.env.SUPABASE_URL,
     anonKey: process.env.SUPABASE_ANON_KEY,
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    directUrl: process.env.SUPABASE_DIRECT_URL,
   },
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',

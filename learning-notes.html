@@ -198,6 +198,7 @@
       <a href="#progress">Progress Tracker</a>
       <div class="nav-heading">Phases</div>
       <a href="#phase1">Phase 1: Project Setup</a>
+      <a href="#phase2">Phase 2: Database Schema</a>
     </nav>
   </aside>
 
@@ -214,7 +215,7 @@
     <h3 id="progress">Progress Tracker</h3>
     <div class="progress-tracker">
       <div class="progress-dot completed" title="Phase 1: Complete">1</div>
-      <div class="progress-dot pending" title="Phase 2">2</div>
+      <div class="progress-dot completed" title="Phase 2: Complete">2</div>
       <div class="progress-dot pending" title="Phase 3">3</div>
       <div class="progress-dot pending" title="Phase 4">4</div>
       <div class="progress-dot pending" title="Phase 5">5</div>
@@ -443,6 +444,188 @@ ApiResponse wrapper → JSON response</code></pre>
     <h3>Mini Revision</h3>
     <div class="card">
       <p><strong>Phase 1</strong> established the project foundation: Express 5 server, centralized config, Supabase client, standardized error/response classes, async error wrapper, and health endpoints. The architecture follows a layered pattern (routes → controllers → services → database) that scales across all 19 phases.</p>
+    </div>
+
+    <!-- ======================== PHASE 2 ======================== -->
+    <h2 id="phase2">Phase 2: Database Schema & Migrations</h2>
+
+    <h3>Goal</h3>
+    <p>Design the complete database schema with proper relationships, foreign keys, indexes, and triggers. Create version-controlled SQL migration files that can be applied to any Supabase project.</p>
+
+    <h3>Features Built</h3>
+    <ul>
+      <li>10 tables: companies, investors, founders, products, funding_rounds, news_articles, and 3 junction tables</li>
+      <li>Full foreign key relationships with CASCADE deletes</li>
+      <li>Performance indexes on slug, name, foreign keys, and date columns</li>
+      <li>CHECK constraint on investor type</li>
+      <li>UNIQUE constraints on slugs for URL-friendly lookups</li>
+      <li>Auto-updating <code>updated_at</code> trigger on all mutable tables</li>
+      <li>Versioned SQL migration file (001_initial_schema.sql)</li>
+      <li>Rollback migration (rollback_001.sql)</li>
+      <li>Node.js migration runner using <code>pg</code> (node-postgres)</li>
+      <li><code>npm run migrate</code> script</li>
+    </ul>
+
+    <h3>Folder Structure</h3>
+    <div class="folder-tree">
+      <div class="dir">GraphOne/</div>
+      <div class="dir indent">├── src/</div>
+      <div class="dir indent">│   └── config/</div>
+      <div class="dir indent">│       ├── migrations/</div>
+      <div class="file indent">│       │   ├── 001_initial_schema.sql</div>
+      <div class="file indent">│       │   ├── rollback_001.sql</div>
+      <div class="file indent">│       │   └── migrate.js</div>
+      <div class="file indent">│       ├── index.js</div>
+      <div class="file indent">│       └── database.js</div>
+      <div class="file indent">├── .env</div>
+      <div class="file indent">├── server.js</div>
+      <div class="file indent">└── learning-notes.html</div>
+    </div>
+
+    <h3>Files Created</h3>
+    <table>
+      <tr><th>File</th><th>Purpose</th></tr>
+      <tr><td><code>src/config/migrations/001_initial_schema.sql</code></td><td>Full DDL: creates all tables, indexes, constraints, triggers, and functions</td></tr>
+      <tr><td><code>src/config/migrations/rollback_001.sql</code></td><td>Reverse migration: drops all tables, triggers, and functions in order</td></tr>
+      <tr><td><code>src/config/migrations/migrate.js</code></td><td>Node.js migration runner using node-postgres (<code>pg</code>)</td></tr>
+    </table>
+
+    <h3>Database Schema</h3>
+    <table>
+      <tr><th>Table</th><th>Columns</th><th>Relationships</th></tr>
+      <tr><td><code>companies</code></td><td>id, name, slug, description, short_description, website, logo_url, location, founded_year, employee_count, linkedin_url, twitter_url, github_url, created_at, updated_at</td><td>Parent to products, funding_rounds. M:M with investors, founders, news_articles via junction tables</td></tr>
+      <tr><td><code>investors</code></td><td>id, name, slug, type (CHECK: VC/Angel/Corporate/Accelerator/Other), website, logo_url, description, location, founded_year, created_at, updated_at</td><td>M:M with companies via company_investors. Referenced by funding_rounds.lead_investor_id</td></tr>
+      <tr><td><code>founders</code></td><td>id, name, slug, title, bio, avatar_url, linkedin_url, twitter_url, created_at, updated_at</td><td>M:M with companies via company_founders</td></tr>
+      <tr><td><code>products</code></td><td>id, name, slug, description, company_id (FK), website, logo_url, category, launch_date, github_url, pricing_model, created_at, updated_at</td><td>Belongs to one company</td></tr>
+      <tr><td><code>funding_rounds</code></td><td>id, company_id (FK), round_name, amount_raised, currency, valuation, announcement_date, lead_investor_id (FK), source_url, created_at, updated_at</td><td>Belongs to one company, optionally references one lead investor</td></tr>
+      <tr><td><code>news_articles</code></td><td>id, title, slug, description, url, source, published_at, author, image_url, created_at</td><td>M:M with companies via company_news</td></tr>
+      <tr><td><code>company_investors</code></td><td>company_id (FK), investor_id (FK)</td><td>Junction: M:M between companies and investors</td></tr>
+      <tr><td><code>company_founders</code></td><td>company_id (FK), founder_id (FK)</td><td>Junction: M:M between companies and founders</td></tr>
+      <tr><td><code>company_news</code></td><td>company_id (FK), news_id (FK)</td><td>Junction: M:M between companies and news articles</td></tr>
+    </table>
+
+    <h3>Entity Relationship Diagram (Text)</h3>
+    <pre><code>companies ──< company_investors >── investors
+companies ──< company_founders  >── founders
+companies ──< company_news      >── news_articles
+companies ──< products
+companies ──< funding_rounds ──>── investors (lead_investor)</code></pre>
+
+    <h3>API Endpoints</h3>
+    <p>None in this phase. APIs start in Phase 4 (Companies Module).</p>
+
+    <h3>Migration Execution Flow</h3>
+    <ol>
+      <li><code>npm run migrate</code> triggers <code>migrate.js</code></li>
+      <li>Reads <code>SUPABASE_DIRECT_URL</code> from config (PostgreSQL connection string)</li>
+      <li>Creates a <code>pg.Pool</code> connection to the Supabase database</li>
+      <li>Reads all <code>.sql</code> files from the migrations directory (sorted alphabetically)</li>
+      <li>Executes each SQL file in order via <code>pool.query(sql)</code></li>
+      <li>Logs success/failure for each migration</li>
+      <li>Closes the connection pool</li>
+    </ol>
+
+    <h3>Why This Schema Design</h3>
+    <ul>
+      <li><strong>UUID primary keys</strong>: Prevent enumeration attacks (vs auto-increment IDs), enable client-side ID generation, and merge-friendly for distributed systems.</li>
+      <li><strong>Slug columns with UNIQUE constraint</strong>: Enable URL-friendly lookups like <code>GET /companies/openai</code> instead of exposing UUIDs.</li>
+      <li><strong>Junction tables for M:M</strong>: Companies, investors, founders, and news are all many-to-many relationships. Junction tables are the standard normalized approach.</li>
+      <li><strong>ON DELETE CASCADE on FKs</strong>: When a company is deleted, its products and funding rounds are automatically removed — no orphaned rows.</li>
+      <li><strong>ON DELETE SET NULL on lead_investor_id</strong>: Deleting an investor shouldn't delete funding rounds; the reference just becomes null.</li>
+      <li><strong>CHECK constraint on investor type</strong>: Ensures data integrity at the database level — no invalid investor types can be inserted.</li>
+      <li><strong>Updated_at trigger</strong>: Automates timestamp management — no application code needed to set <code>updated_at</code>.</li>
+    </ul>
+
+    <h3>Important Code Explained</h3>
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span><code>001_initial_schema.sql</code> — The set_updated_at trigger</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>This PL/pgSQL function is attached to BEFORE UPDATE triggers on 5 tables. When any row is updated, PostgreSQL automatically sets the <code>updated_at</code> column to the current timestamp before the update executes. This ensures audit timestamps are never stale, even if someone updates the row directly in the database.</p>
+        <pre><code>CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;</code></pre>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <span><code>migrate.js</code> — The migration runner</span>
+        <span class="toggle">▶</span>
+      </div>
+      <div class="phase-body">
+        <p>Uses <code>pg.Pool</code> to connect directly to the Supabase PostgreSQL database via <code>SUPABASE_DIRECT_URL</code>. Reads all <code>.sql</code> files sorted alphabetically and executes them. This is the standard pattern for version-controlled database migrations in production. Unlike ORM-based migrations (like Sequelize), raw SQL gives full control over DDL features like triggers, CHECK constraints, and partial indexes.</p>
+        <p><strong>Why node-postgres instead of Supabase JS client?</strong> The Supabase JS client wraps the REST API and doesn't support executing raw SQL/DDL statements. For schema changes, we need a direct PostgreSQL connection.</p>
+      </div>
+    </div>
+
+    <h3>Common Bugs</h3>
+    <ul>
+      <li><strong>Missing SUPABASE_DIRECT_URL</strong>: The migrate script will fail if this env var is not set. Get it from Supabase Dashboard → Settings → Database → Connection string.</li>
+      <li><strong>Wrong migration order</strong>: If you add a new migration file that depends on a previous one, name it with a higher number (e.g., <code>002_add_indexes.sql</code>). Files are sorted alphabetically.</li>
+      <li><strong>Foreign key conflicts</strong>: When inserting test data, make sure referenced rows exist before inserting rows with foreign keys.</li>
+      <li><strong>UUID vs serial</strong>: If you're used to auto-increment IDs, remember that UUIDs are generated client-side or via <code>gen_random_uuid()</code>.</li>
+      <li><strong>Slug uniqueness</strong>: Two companies with the same name (e.g., "AI" in different contexts) would conflict on slug. Consider appending a suffix in the seed script.</li>
+    </ul>
+
+    <h3>Debugging Tips</h3>
+    <ul>
+      <li>Run <code>npm run migrate</code> and check the console output — each migration is logged.</li>
+      <li>Use <code>psql</code> or Supabase SQL Editor to inspect tables: <code>\dt</code> lists all tables.</li>
+      <li>Check <code>\d companies</code> to see the full table definition including indexes and constraints.</li>
+      <li>If a migration fails mid-way, run the rollback first, fix the issue, then re-run.</li>
+    </ul>
+
+    <h3>Interview Questions</h3>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">1. Why UUIDs instead of auto-increment IDs?</div>
+      <div class="qa-a">UUIDs prevent enumeration attacks (users can't guess IDs), allow offline/client-side ID generation, and prevent ID collisions in distributed/microservice architectures. The tradeoff is slightly larger storage (16 bytes vs 4 bytes for integer) and slightly slower B-tree index performance.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">2. What is a junction table and when do you use one?</div>
+      <div class="qa-a">A junction table (also called an associative or linking table) resolves a many-to-many relationship between two entities. It contains foreign keys to both related tables as a composite primary key. For example, a company can have multiple investors, and an investor can fund multiple companies — this M:M relationship is modeled with the <code>company_investors</code> junction table.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">3. What is the difference between ON DELETE CASCADE and ON DELETE SET NULL?</div>
+      <div class="qa-a">CASCADE automatically deletes child rows when a parent row is deleted (e.g., deleting a company deletes its products). SET NULL sets the foreign key column to NULL when the parent is deleted (e.g., deleting an investor leaves the funding round intact but removes the investor reference). CASCADE is for strong ownership; SET NULL for optional references.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">4. Why have a separate slug column instead of using the name in the URL?</div>
+      <div class="qa-a">Names can contain special characters, spaces, and can change over time. Slugs are URL-safe, permanent identifiers (e.g., "openai" vs "OpenAI"). Using a slug also avoids URL encoding issues and makes for cleaner, SEO-friendly URLs.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleAnswer(this)">5. What is the purpose of the pgcrypto extension?</div>
+      <div class="qa-a"><code>pgcrypto</code> provides cryptographic functions in PostgreSQL, including <code>gen_random_uuid()</code> which generates random UUIDs. Without the extension, we'd need to generate UUIDs in application code or use a different method.</div>
+    </div>
+
+    <h3>Key Takeaways</h3>
+    <ul>
+      <li>Design the schema before writing any API code — the database is the foundation.</li>
+      <li>Use UUIDs for public-facing IDs to prevent enumeration.</li>
+      <li>Junction tables are the standard way to model many-to-many relationships.</li>
+      <li>Always version-control database migrations alongside application code.</li>
+      <li>Database-level constraints (CHECK, UNIQUE, NOT NULL) enforce data integrity even if bugs exist in application code.</li>
+      <li>Index foreign key columns and frequently-queried columns for performance.</li>
+    </ul>
+
+    <h3>Production Insights</h3>
+    <ul>
+      <li>Never run migrations manually in production — automate them in your CI/CD pipeline.</li>
+      <li>Always test migrations on a staging database first.</li>
+      <li>Consider using <code>pg-migrate</code> or <code>node-pg-migrate</code> for more advanced migration features (transactions, up/down functions).</li>
+      <li>Supabase provides a built-in migration system via their CLI (<code>supabase db push</code>) — consider using it for team projects.</li>
+      <li>For high-traffic tables, consider adding composite indexes for common query patterns (e.g., <code>(company_id, announcement_date)</code> for funding rounds).</li>
+    </ul>
+
+    <h3>Mini Revision</h3>
+    <div class="card">
+      <p><strong>Phase 2</strong> designed the complete database schema with 6 entity tables and 3 junction tables for M:M relationships. The schema uses UUID primary keys, slug-based lookups, foreign key constraints with appropriate delete behaviors, CHECK constraints for data validation, performance indexes, and auto-updating timestamp triggers. A version-controlled migration system was created using raw SQL files and a Node.js runner with <code>pg</code>. The schema is ready for seeding and API development.</p>
     </div>
 
   </main>

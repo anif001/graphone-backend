@@ -5,9 +5,16 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "migrate": "node src/config/migrations/migrate.js"
   },
-  "keywords": ["ai", "ecosystem", "backend", "express", "supabase"],
+  "keywords": [
+    "ai",
+    "ecosystem",
+    "backend",
+    "express",
+    "supabase"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -18,7 +25,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "helmet": "^8.2.0",
-    "morgan": "^1.11.0"
+    "morgan": "^1.11.0",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
