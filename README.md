@@ -15,7 +15,6 @@ GraphOne API is a REST API for exploring the AI ecosystem. It provides informati
 * Swagger Documentation
 * Available Scripts
 * Deployment
-* License
 
 ---
 
@@ -313,6 +312,4 @@ Database: Supabase PostgreSQL
 
 ---
 
-## License
 
-MIT
