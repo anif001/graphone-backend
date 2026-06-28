@@ -7,6 +7,7 @@ const config = require('./src/config');
 const rootRouter = require('./src/routes');
 const { errorHandler, notFoundHandler } = require('./src/middleware');
 const { generalLimiter } = require('./src/middleware/rateLimiter');
+const { swaggerSetup } = require('./src/config/swagger');
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
 app.use(generalLimiter);
+
+swaggerSetup(app);
 
 app.use('/api/v1', rootRouter);
 
