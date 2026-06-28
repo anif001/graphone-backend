@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const ApiResponse = require('../utils/ApiResponse');
+const companiesRouter = require('./companies');
 
 const router = Router();
 
@@ -13,6 +14,8 @@ router.get('/', (req, res) => {
   });
   res.status(response.statusCode).json(response);
 });
+
+router.use('/companies', companiesRouter);
 
 router.get('/health', (req, res) => {
   const response = new ApiResponse(200, {

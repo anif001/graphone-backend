@@ -1,4 +1,4 @@
-const supabase = require('../config/database');
+const getSupabase = require('../config/database');
 const config = require('../config');
 const companies = require('./data/companies');
 const investors = require('./data/investors');
@@ -13,6 +13,8 @@ async function seed() {
     console.error('Error: SUPABASE_SERVICE_ROLE_KEY is required for seeding.');
     process.exit(1);
   }
+
+  const supabase = getSupabase();
 
   console.log('Starting seed...\n');
 
