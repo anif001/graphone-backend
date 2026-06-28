@@ -4,14 +4,14 @@ const ApiError = require('../utils/ApiError');
 const companiesService = require('../services/companies');
 
 const getAllCompanies = asyncHandler(async (req, res) => {
-  const { page, limit, search, sortBy, sortOrder } = req.query;
+  const { page, limit, search, sort: sortBy = 'name', order: sortOrder = 'asc' } = req.query;
 
   const result = await companiesService.findAll({
     page: parseInt(page, 10) || 1,
     limit: Math.min(parseInt(limit, 10) || 20, 100),
     search,
-    sortBy: sortBy || 'name',
-    sortOrder: sortOrder || 'asc',
+    sortBy,
+    sortOrder,
   });
 
   const response = new ApiResponse(200, {

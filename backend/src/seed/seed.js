@@ -76,34 +76,19 @@ async function seed() {
 
   // ── 4. Products ──
   console.log('Inserting products...');
-  let productCount = 0;
-  for (const product of products) {
-    if (!companySlugMap[product.companySlug]) {
-      console.log(`  ⚠ Skipping product "${product.name}" — company "${product.companySlug}" not found`);
-      continue;
-    }
-    const { companySlug, ...productData } = product;
-    const { error } = await supabase.from('products').upsert(
-      { ...productData, company_id: null },
-      { onConflict: 'slug', ignoreDuplicates: false }
-    );
-    if (error) {
-      console.error(`  ✗ Error inserting product "${product.name}":`, error.message);
-    } else {
-      productCount++;
-    }
-  }
-  // We need the actual company UUID — let us do a bulk approach instead
-  // Fetch all company IDs by slug
   const { data: companyRows } = await supabase.from('companies').select('id, slug');
   const slugToId = {};
   for (const row of (companyRows || [])) {
     slugToId[row.slug] = row.id;
   }
 
+  let productCount = 0;
   for (const product of products) {
     const companyId = slugToId[product.companySlug];
-    if (!companyId) continue;
+    if (!companyId) {
+      console.log(`  ⚠ Skipping product "${product.name}" — company "${product.companySlug}" not found`);
+      continue;
+    }
     const { companySlug, ...productData } = product;
     const { error } = await supabase.from('products').upsert(
       { ...productData, company_id: companyId },

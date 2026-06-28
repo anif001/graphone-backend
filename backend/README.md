@@ -43,35 +43,48 @@ npm run dev
 
 ## API Endpoints
 
+All endpoints are prefixed with `/api/v1`.
+
+### Root
+- `GET /api/v1/` — API info (name, version, status)
+
 ### Companies
 - `GET /api/v1/companies` — List companies (paginated, searchable, sortable)
-- `GET /api/v1/companies/:slug` — Company profile with relationships
+  - Query: `page`, `limit`, `search`, `sort` (name\|founded_year\|created_at), `order` (asc\|desc)
+- `GET /api/v1/companies/:slug` — Company profile with founders, products, funding rounds, investors, news, and related companies
 
 ### Investors
 - `GET /api/v1/investors` — List investors (filterable by type)
-- `GET /api/v1/investors/:slug` — Investor profile with portfolio
+  - Query: `page`, `limit`, `type` (VC\|Angel\|Corporate\|Accelerator\|Other)
+- `GET /api/v1/investors/:slug` — Investor profile with portfolio companies and led funding rounds
 
 ### Products
 - `GET /api/v1/products` — List products (filterable by category)
-- `GET /api/v1/products/:slug` — Product details
+  - Query: `page`, `limit`, `category`
+- `GET /api/v1/products/:slug` — Product details with parent company
 
 ### Founders
 - `GET /api/v1/founders` — List founders (searchable)
-- `GET /api/v1/founders/:slug` — Founder profile with companies
+  - Query: `page`, `limit`, `search`
+- `GET /api/v1/founders/:slug` — Founder profile with associated companies
 
 ### News
 - `GET /api/v1/news` — List news articles (filterable by source)
-- `GET /api/v1/news/:slug` — Article details
+  - Query: `page`, `limit`, `source`
+- `GET /api/v1/news/:slug` — Article details with related companies
 
 ### Search & Discovery
-- `GET /api/v1/search?q=` — Unified search across all entities
-- `GET /api/v1/feed` — Chronological activity feed
-- `GET /api/v1/trending` — Trending companies (by recent activity)
-- `GET /api/v1/stats` — Ecosystem statistics
+- `GET /api/v1/search?q=` — Unified search across companies, investors, founders, products, and news
+  - Query: `q` (required, min 2 chars), `limit`
+- `GET /api/v1/feed` — Chronological activity feed (news, funding rounds, product launches)
+  - Query: `page`, `limit`
+- `GET /api/v1/trending` — Trending companies ranked by recent news, funding, and product activity
+  - Query: `limit`, `days`
+- `GET /api/v1/stats` — Ecosystem statistics (totals, funding, breakdowns by type/category)
 
 ### System
-- `GET /api/v1/health` — Health check
-- `GET /api/v1/docs` — Swagger documentation
+- `GET /api/v1/health` — Health check (uptime)
+- `GET /api/v1/docs` — Swagger/OpenAPI documentation
 
 ## Project Structure
 

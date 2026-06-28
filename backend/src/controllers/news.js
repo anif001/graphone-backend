@@ -4,13 +4,13 @@ const ApiError = require('../utils/ApiError');
 const newsService = require('../services/news');
 
 const getAllNews = asyncHandler(async (req, res) => {
-  const { page, limit, search, source, sortBy, sortOrder } = req.query;
+  const { page, limit, search, source, sort: sortBy = 'published_at', order: sortOrder = 'desc' } = req.query;
   const result = await newsService.findAll({
     page: parseInt(page, 10) || 1,
     limit: Math.min(parseInt(limit, 10) || 20, 100),
     search, source,
-    sortBy: sortBy || 'published_at',
-    sortOrder: sortOrder || 'desc',
+    sortBy,
+    sortOrder,
   });
   res.json(new ApiResponse(200, {
     news: result.data, total: result.total, page: result.page, limit: result.limit,
